@@ -1,0 +1,61 @@
+{
+	"manifest_version": 2,
+	"name": "PageAuthors",
+	"version": "1.0",
+	"url": "https://www.mediawiki.org/wiki/Extension:PageAuthors",
+	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
+	"descriptionmsg": "pageauthors-desc",
+	"license-name": "GPL-3.0-or-later",
+	"type": "parserhook",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+	"MessagesDirs": {
+		"PageAuthors": [
+			"i18n"
+		]
+	},
+	"ExtensionMessagesFiles": {
+		"PageAuthorsMagic": "PageAuthors.i18n.magic.php"
+	},
+	"AutoloadClasses": {
+		"PageAuthors": "PageAuthors.php"
+	},
+	"Hooks": {
+		"GetMagicVariableIDs": "PageAuthors::onGetMagicVariableIDs",
+		"ParserGetVariableValueSwitch": "PageAuthors::onParserGetVariableValueSwitch",
+		"ParserFirstCallInit": "PageAuthors::onParserFirstCallInit"
+	},
+	"config": {
+		"PageAuthorsMinBytesPerAuthor": {
+			"value": 100
+		},
+		"PageAuthorsMinBytesPerEdit": {
+			"value": 10
+		},
+		"PageAuthorsIgnoreSummaryPatterns": {
+			"value": [
+				"/Undo.*/",
+				"/Revert.*/"
+			]
+		},
+		"PageAuthorsIgnoreMinorEdits": {
+			"value": true
+		},
+		"PageAuthorsIgnoreSystemUsers": {
+			"value": true
+		},
+		"PageAuthorsIgnoreBots": {
+			"value": true
+		},
+		"PageAuthorsIgnoreAnons": {
+			"value": true
+		},
+		"PageAuthorsIgnoreBlocked": {
+			"value": true
+		},
+		"PageAuthorsDelimiter": {
+			"value": ", "
+		}
+	}
+}
