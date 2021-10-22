@@ -6,6 +6,8 @@ class PageAuthors {
 
 	/**
 	 * Register PAGEAUTHORS variable
+	 *
+	 * @param string[] &$variableIDs
 	 */
 	public static function onGetMagicVariableIDs( &$variableIDs ) {
 		$variableIDs[] = 'PAGEAUTHORS';
@@ -13,6 +15,8 @@ class PageAuthors {
 
 	/**
 	 * Register PAGEAUTHORS parser function
+	 *
+	 * @param Parser $parser
 	 */
 	public static function onParserFirstCallInit( Parser $parser ) {
 		$parser->setFunctionHook( 'PAGEAUTHORS', [ self::class, 'getPageAuthors' ], SFH_NO_HASH );
@@ -20,6 +24,13 @@ class PageAuthors {
 
 	/**
 	 * Assign a value to PAGEAUTHORS variable
+	 *
+	 * @param Parser $parser
+	 * @param array &$variableCache
+	 * @param string $magicWordId
+	 * @param string &$ret
+	 * @param PPFrame $frame
+	 * @return bool
 	 */
 	public static function onParserGetVariableValueSwitch( $parser, &$variableCache, $magicWordId, &$ret, $frame ) {
 		if ( $magicWordId === 'PAGEAUTHORS' ) {
@@ -30,6 +41,10 @@ class PageAuthors {
 
 	/**
 	 * Get the main authors of the given page
+	 *
+	 * @param Parser $parser
+	 * @param string $input
+	 * @return string
 	 */
 	public static function getPageAuthors( Parser $parser, string $input = '' ) {
 		global $wgPageAuthorsDelimiter,
@@ -39,7 +54,7 @@ class PageAuthors {
 			$wgPageAuthorsIgnoreMinorEdits,
 			$wgPageAuthorsIgnoreSystemUsers,
 			$wgPageAuthorsIgnoreBots,
-			$wgPageAuthorsIgnoreBlocked, 
+			$wgPageAuthorsIgnoreBlocked,
 			$wgPageAuthorsIgnoreAnons;
 		$title = $input ? Title::newFromText( $input ) : $parser->getTitle();
 		$id = $title->getArticleID();
@@ -90,7 +105,7 @@ class PageAuthors {
 				$authors[ $revisionUserName ] = $revisionDiff;
 			}
 		}
-		$authors = array_filter( $authors, function ( $bytes ) {
+		$authors = array_filter( $authors, static function ( $bytes ) {
 			global $wgPageAuthorsMinBytesPerAuthor;
 			return $wgPageAuthorsMinBytesPerAuthor < $bytes;
 		} );
@@ -100,4 +115,3 @@ class PageAuthors {
 		return $authors;
 	}
 }
- 

@@ -10,7 +10,8 @@
 
 $magicWords = [];
 
-/** English
+/**
+ * English
  * @author Sophivorus
  */
 $magicWords['en'] = [
