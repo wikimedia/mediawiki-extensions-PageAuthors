@@ -55,7 +55,9 @@ class PageAuthors {
 			$wgPageAuthorsIgnoreSystemUsers,
 			$wgPageAuthorsIgnoreBots,
 			$wgPageAuthorsIgnoreBlocked,
-			$wgPageAuthorsIgnoreAnons;
+			$wgPageAuthorsIgnoreAnons,
+			$wgPageAuthorsIgnoreUsers,
+			$wgPageAuthorsIgnoreGroups;
 		$title = $input ? Title::newFromText( $input ) : $parser->getTitle();
 		$id = $title->getArticleID();
 		$authors = [];
@@ -98,7 +100,13 @@ class PageAuthors {
 			if ( $wgPageAuthorsIgnoreAnons && $revisionUser->isAnon() ) {
 				continue;
 			}
+			if ( $wgPageAuthorsIgnoreGroups && array_intersect( $revisionUser->getGroups(), $wgPageAuthorsIgnoreGroups ) ) {
+				continue;
+			}
 			$revisionUserName = $revisionUser->getName();
+			if ( $wgPageAuthorsIgnoreUsers && in_array( $revisionUserName, $wgPageAuthorsIgnoreUsers ) ) {
+				continue;
+			}
 			if ( array_key_exists( $revisionUserName, $authors ) ) {
 				$authors[ $revisionUserName ] += $revisionDiff;
 			} else {
