@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 	"name": "PageAuthors",
-	"version": "1.0",
+	"version": "1.1",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageAuthors",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"descriptionmsg": "pageauthors-desc",
@@ -50,6 +50,12 @@
 		},
 		"PageAuthorsIgnoreAnons": {
 			"value": true
+		},
+		"PageAuthorsIgnoreUsers": {
+			"value": []
+		},
+		"PageAuthorsIgnoreGroups": {
+			"value": []
 		},
 		"PageAuthorsIgnoreBlocked": {
 			"value": true
