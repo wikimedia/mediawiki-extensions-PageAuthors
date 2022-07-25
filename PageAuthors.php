@@ -65,6 +65,7 @@ class PageAuthors {
 		$revisionSize = 0;
 		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $id );
 		$revisionStore = MediaWikiServices::getInstance()->getRevisionStore();
+		$userFactory = MediaWikiServices::getInstance()->getUserFactory();
 		foreach ( $revisionIds as $revisionId ) {
 			$revision = $revisionStore->getRevisionById( $revisionId );
 			if ( !$revision ) {
@@ -87,7 +88,7 @@ class PageAuthors {
 					}
 				}
 			}
-			$revisionUser = $revision->getUser();
+			$revisionUser = $userFactory->newFromUserIdentity( $revision->getUser() );
 			if ( $wgPageAuthorsIgnoreSystemUsers && $revisionUser->isSystemUser() ) {
 				continue;
 			}
