@@ -36,6 +36,7 @@ class PageAuthors {
 		if ( $magicWordId === 'PAGEAUTHORS' ) {
 			$ret = self::getPageAuthors( $parser );
 		}
+		$variableCache[ $magicWordId ] = $ret;
 		return true;
 	}
 
