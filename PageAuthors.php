@@ -48,8 +48,7 @@ class PageAuthors {
 	 * @return string
 	 */
 	public static function getPageAuthors( Parser $parser, string $input = '' ) {
-		global $wgPageAuthorsDelimiter,
-			$wgPageAuthorsMinBytesPerEdit,
+		global $wgPageAuthorsMinBytesPerEdit,
 			$wgPageAuthorsMinBytesPerAuthor,
 			$wgPageAuthorsIgnoreSummaryPatterns,
 			$wgPageAuthorsIgnoreMinorEdits,
@@ -58,10 +57,14 @@ class PageAuthors {
 			$wgPageAuthorsIgnoreBlocked,
 			$wgPageAuthorsIgnoreAnons,
 			$wgPageAuthorsIgnoreUsers,
-			$wgPageAuthorsIgnoreGroups;
+			$wgPageAuthorsIgnoreGroups,
+			$wgPageAuthorsUseRealNames,
+			$wgPageAuthorsLinkUserPages,
+			$wgPageAuthorsDelimiter;
 		$title = $input ? Title::newFromText( $input ) : $parser->getTitle();
 		$id = $title->getArticleID();
 		$authors = [];
+		$author = '';
 		$dbr = wfGetDB( DB_REPLICA );
 		$revisionSize = 0;
 		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $id );
@@ -105,14 +108,22 @@ class PageAuthors {
 			if ( $wgPageAuthorsIgnoreGroups && array_intersect( $revisionUser->getGroups(), $wgPageAuthorsIgnoreGroups ) ) {
 				continue;
 			}
-			$revisionUserName = $revisionUser->getName();
-			if ( $wgPageAuthorsIgnoreUsers && in_array( $revisionUserName, $wgPageAuthorsIgnoreUsers ) ) {
+			$author = $revisionUser->getName();
+			if ( $wgPageAuthorsIgnoreUsers && in_array( $author, $wgPageAuthorsIgnoreUsers ) ) {
 				continue;
 			}
-			if ( array_key_exists( $revisionUserName, $authors ) ) {
-				$authors[ $revisionUserName ] += $revisionDiff;
+			$realName = $revisionUser->getRealName();
+			if ( $wgPageAuthorsUseRealNames && $realName ) {
+				$author = $realName;
+			}
+			if ( $wgPageAuthorsLinkUserPages ) {
+				$userPage = $revisionUser->getUserPage()->getFullText();
+				$author = "[[$userPage|$author]]";
+			}
+			if ( array_key_exists( $author, $authors ) ) {
+				$authors[ $author ] += $revisionDiff;
 			} else {
-				$authors[ $revisionUserName ] = $revisionDiff;
+				$authors[ $author ] = $revisionDiff;
 			}
 		}
 		$authors = array_filter( $authors, static function ( $bytes ) {
