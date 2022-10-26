@@ -49,7 +49,6 @@ class PageAuthors {
 	 */
 	public static function getPageAuthors( Parser $parser, string $input = '' ) {
 		global $wgPageAuthorsMinBytesPerEdit,
-			$wgPageAuthorsMinBytesPerAuthor,
 			$wgPageAuthorsIgnoreSummaryPatterns,
 			$wgPageAuthorsIgnoreMinorEdits,
 			$wgPageAuthorsIgnoreSystemUsers,
@@ -105,7 +104,9 @@ class PageAuthors {
 			if ( $wgPageAuthorsIgnoreAnons && $revisionUser->isAnon() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreGroups && array_intersect( $revisionUser->getGroups(), $wgPageAuthorsIgnoreGroups ) ) {
+			if ( $wgPageAuthorsIgnoreGroups &&
+				array_intersect( $revisionUser->getGroups(), $wgPageAuthorsIgnoreGroups )
+			) {
 				continue;
 			}
 			$author = $revisionUser->getName();
