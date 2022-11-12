@@ -99,7 +99,7 @@ class PageAuthors {
 			if ( $wgPageAuthorsIgnoreBots && $revisionUser->isBot() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreBlocked && $revisionUser->isBlocked() ) {
+			if ( $wgPageAuthorsIgnoreBlocked && $revisionUser->getBlock() ) {
 				continue;
 			}
 			if ( $wgPageAuthorsIgnoreAnons && $revisionUser->isAnon() ) {
