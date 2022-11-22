@@ -69,6 +69,7 @@ class PageAuthors {
 		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $id );
 		$revisionStore = MediaWikiServices::getInstance()->getRevisionStore();
 		$userFactory = MediaWikiServices::getInstance()->getUserFactory();
+		$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
 		foreach ( $revisionIds as $revisionId ) {
 			$revision = $revisionStore->getRevisionById( $revisionId );
 			if ( !$revision ) {
@@ -105,7 +106,7 @@ class PageAuthors {
 				continue;
 			}
 			if ( $wgPageAuthorsIgnoreGroups &&
-				array_intersect( $revisionUser->getGroups(), $wgPageAuthorsIgnoreGroups )
+				array_intersect( $userGroupManager->getUserGroups( $revisionUser ), $wgPageAuthorsIgnoreGroups )
 			) {
 				continue;
 			}
