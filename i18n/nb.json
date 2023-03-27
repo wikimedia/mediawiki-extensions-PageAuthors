@@ -1,0 +1,8 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jon Harald Søby"
+		]
+	},
+	"pageauthors-desc": "Henter en fornuftig liste over forfattere av en side"
+}
