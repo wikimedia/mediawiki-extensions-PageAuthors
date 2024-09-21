@@ -64,7 +64,7 @@ class PageAuthors {
 		$id = $title->getArticleID();
 		$authors = [];
 		$author = '';
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
 		$revisionSize = 0;
 		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $id );
 		$revisionStore = MediaWikiServices::getInstance()->getRevisionStore();
