@@ -1,14 +1,14 @@
 {
 	"manifest_version": 2,
 	"name": "PageAuthors",
-	"version": "1.5",
+	"version": "2.0",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageAuthors",
 	"author": "[https://www.mediawiki.org/wiki/User:Sophivorus Sophivorus]",
 	"descriptionmsg": "pageauthors-desc",
 	"license-name": "GPL-3.0-or-later",
 	"type": "parserhook",
 	"requires": {
-		"MediaWiki": ">= 1.39.4"
+		"MediaWiki": ">= 1.45"
 	},
 	"MessagesDirs": {
 		"PageAuthors": [

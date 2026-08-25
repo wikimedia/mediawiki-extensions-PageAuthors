@@ -49,29 +49,20 @@ class PageAuthors {
 	 * @return string
 	 */
 	public static function getPageAuthors( Parser $parser, string $input = '' ) {
-		global $wgPageAuthorsMinBytesPerEdit,
-			$wgPageAuthorsIgnoreSummaryPatterns,
-			$wgPageAuthorsIgnoreMinorEdits,
-			$wgPageAuthorsIgnoreSystemUsers,
-			$wgPageAuthorsIgnoreBots,
-			$wgPageAuthorsIgnoreBlocked,
-			$wgPageAuthorsIgnoreAnons,
-			$wgPageAuthorsIgnoreUsers,
-			$wgPageAuthorsIgnoreGroups,
-			$wgPageAuthorsUseRealNames,
-			$wgPageAuthorsLinkUserPages,
-			$wgPageAuthorsShowUserNamespace,
-			$wgPageAuthorsDelimiter;
-		$title = $input ? Title::newFromText( $input ) : $parser->getTitle();
-		$id = $title->getArticleID();
 		$authors = [];
-		$author = '';
-		$dbr = MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( DB_REPLICA );
+
+		// Set some variables that we'll need in the loop
+		$services = MediaWikiServices::getInstance();
+		$provider = $services->getConnectionProvider();
+		$dbr = $provider->getReplicaDatabase();
+		$revisionStore = $services->getRevisionStore();
+		$userFactory = $services->getUserFactory();
+		$userGroupManager = $services->getUserGroupManager();
+		$config = $services->getMainConfig();
+
+		$title = $input ? Title::newFromText( $input ) : $parser->getTitle();
+		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $title->getId() );
 		$revisionSize = 0;
-		$revisionIds = $dbr->selectFieldValues( 'revision', 'rev_id', 'rev_page = ' . $id );
-		$revisionStore = MediaWikiServices::getInstance()->getRevisionStore();
-		$userFactory = MediaWikiServices::getInstance()->getUserFactory();
-		$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
 		foreach ( $revisionIds as $revisionId ) {
 			$revision = $revisionStore->getRevisionById( $revisionId );
 			if ( !$revision ) {
@@ -79,52 +70,50 @@ class PageAuthors {
 			}
 			$revisionDiff = $revision->getSize() - $revisionSize;
 			$revisionSize = $revision->getSize();
-			if ( $revisionDiff < $wgPageAuthorsMinBytesPerEdit ) {
+			if ( $revisionDiff < $config->get( 'PageAuthorsMinBytesPerEdit' ) ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreMinorEdits && $revision->isMinor() ) {
+			if ( $config->get( 'PageAuthorsIgnoreMinorEdits' ) && $revision->isMinor() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreSummaryPatterns ) {
-				$comment = $revision->getComment();
-				$summary = $comment->text;
-				foreach ( $wgPageAuthorsIgnoreSummaryPatterns as $pattern ) {
-					if ( preg_match( $pattern, $summary ) ) {
-						continue 2;
-					}
+			$patterns = $config->get( 'PageAuthorsIgnoreSummaryPatterns' );
+			$comment = $revision->getComment();
+			$summary = $comment->text;
+			foreach ( $patterns as $pattern ) {
+				if ( preg_match( $pattern, $summary ) ) {
+					continue;
 				}
 			}
 			$revisionUser = $userFactory->newFromUserIdentity( $revision->getUser() );
-			if ( $wgPageAuthorsIgnoreSystemUsers && $revisionUser->isSystemUser() ) {
+			if ( $config->get( 'PageAuthorsIgnoreSystemUsers' ) && $revisionUser->isSystemUser() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreBots && $revisionUser->isBot() ) {
+			if ( $config->get( 'PageAuthorsIgnoreBots' ) && $revisionUser->isBot() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreBlocked && $revisionUser->getBlock() ) {
+			if ( $config->get( 'PageAuthorsIgnoreBlocked' ) && $revisionUser->getBlock() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreAnons && $revisionUser->isAnon() ) {
+			if ( $config->get( 'PageAuthorsIgnoreAnons' ) && $revisionUser->isAnon() ) {
 				continue;
 			}
-			if ( $wgPageAuthorsIgnoreGroups &&
-				array_intersect( $userGroupManager->getUserGroups( $revisionUser ), $wgPageAuthorsIgnoreGroups )
-			) {
+			$userGroups = $userGroupManager->getUserGroups( $revisionUser );
+			if ( array_intersect( $userGroups, $config->get( 'PageAuthorsIgnoreGroups' ) ) ) {
 				continue;
 			}
 			$author = $revisionUser->getName();
-			if ( $wgPageAuthorsIgnoreUsers && in_array( $author, $wgPageAuthorsIgnoreUsers ) ) {
+			if ( in_array( $author, $config->get( 'PageAuthorsIgnoreUsers' ) ) ) {
 				continue;
 			}
 			$userPage = $revisionUser->getUserPage()->getFullText();
-			if ( $wgPageAuthorsShowUserNamespace ) {
+			if ( $config->get( 'PageAuthorsShowUserNamespace' ) ) {
 				$author = $userPage;
 			}
 			$realName = $revisionUser->getRealName();
-			if ( $wgPageAuthorsUseRealNames && $realName ) {
+			if ( $config->get( 'PageAuthorsUseRealNames' ) && $realName ) {
 				$author = $realName;
 			}
-			if ( $wgPageAuthorsLinkUserPages ) {
+			if ( $config->get( 'PageAuthorsLinkUserPages' ) ) {
 				$author = "[[$userPage|$author]]";
 			}
 			if ( array_key_exists( $author, $authors ) ) {
@@ -133,13 +122,12 @@ class PageAuthors {
 				$authors[ $author ] = $revisionDiff;
 			}
 		}
-		$authors = array_filter( $authors, static function ( $bytes ) {
-			global $wgPageAuthorsMinBytesPerAuthor;
-			return $wgPageAuthorsMinBytesPerAuthor < $bytes;
-		} );
+		$authors = array_filter( $authors, static fn ( $bytes ) =>
+			$config->get( 'PageAuthorsMinBytesPerAuthor' ) < $bytes
+		);
 		arsort( $authors );
 		$authors = array_keys( $authors );
-		$authors = implode( $wgPageAuthorsDelimiter, $authors );
+		$authors = implode( $config->get( 'PageAuthorsDelimiter' ), $authors );
 		return $authors;
 	}
 }
